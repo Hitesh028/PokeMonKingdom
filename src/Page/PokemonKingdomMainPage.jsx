@@ -5,18 +5,21 @@ import styles from "./PokemonKingdomMainPage.module.css";
 
 function PokemonKingdomMainPage(props)
 {
+    const url = "https://content.newtonschool.co/v1/pr/64ccef982071a9ad01d36ff6/pokemonspages1";
+    const [nexturl, setNextUrl] = useState(url);
     const [loading, setLoading] = useState(false);
     const [PokemonData,setPokemonData] = useState([]);
+    
+    
 
-    useEffect(() => {
-
-        const url = "https://content.newtonschool.co/v1/pr/64ccef982071a9ad01d36ff6/pokemonspages1";
-        async function fetchPokemonData()
-        {
+    async function fetchPokemonData()
+    {
             setLoading(true);
-            const response = await fetch(url);
+            const response = await fetch(nexturl);
             let data = await response.json();
             data = data[0];
+
+            setNextUrl(data.next);
             
             const {results = [],next,count} = data;
             // console.log(results);
@@ -36,10 +39,13 @@ function PokemonKingdomMainPage(props)
 
                 ListOfAllPokemon.push(data2);
             }
-            setPokemonData(ListOfAllPokemon);
+            setPokemonData((oldData) => [...oldData,...ListOfAllPokemon]);
             // console.log(ListOfAllPokemon);
             setLoading(false);
-        } 
+    } 
+
+    useEffect(() => {
+
         fetchPokemonData();
         },[]);
 
@@ -49,23 +55,30 @@ function PokemonKingdomMainPage(props)
           <h1>LOADING........</h1>
         ) : (
           <>
-            <h1>Pokemon Kingdom Welcome</h1>
-            <div className="app-container">
+            <h1 className={styles.Heading}>Pokemon Kingdom Welcome</h1>
+            <div className={styles["app-container"]}>
                 <div className={styles["pokemon-container"]}>
                     {PokemonData.map((pokemon) => {
-                        const {id,name,type,image} = pokemon;
+                        const {id} = pokemon;
+                        // console.log(pokemon,"mainpage")
 
                         return(
-                            <PokemonCardComponent
-                                id = {id}
-                                name = {name}
-                                type = {type}
-                                image = {image}
-                            />
+                            <div key={id} >
+                            <PokemonCardComponent pokemon = {pokemon}/>
+                            </div>
                         );   
                     })}
 
                 </div>
+                <button
+                onClick={() => {
+                    console.log("Need to load More pokemons");
+                    fetchPokemonData();
+                }}
+                className={styles.loadmore}
+                >
+                Load More
+                </button>
 
             </div>
   
